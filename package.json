@@ -1,0 +1,58 @@
+{
+  "name": "order",
+  "version": "1.0.0",
+  "description": "order chinese food on thursday",
+  "main": "index.js",
+  "author": "Yifan Zhang",
+  "license": "MIT",
+  "scripts": {
+    "build:dev": "./node_modules/webpack/bin/webpack.js --config=webpack.config.js",
+    "build:prod": "./node_modules/webpack/bin/webpack.js --config=webpack.config.js",
+    "postinstall": "webpack --config=webpack.config.js",
+    "start": "node ./server.js",
+    "dev-server": "webpack-dev-server --hot"
+  },
+  "engines": {
+    "node": "7.5.0",
+    "npm": "4.1.2"
+  },
+  "dependencies": {
+    "antd": "^2.6.4",
+    "body-parser": "^1.16.0",
+    "connect-mongo": "^1.3.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.1",
+    "express-session": "^1.15.0",
+    "mongodb": "^2.2.22",
+    "mongojs": "^2.4.0",
+    "mongoose": "^4.8.1",
+    "morgan": "^1.8.0",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^4.0.0",
+    "react": "^15.4.2",
+    "react-cookie": "^1.0.4",
+    "react-document-title": "^2.0.2",
+    "react-dom": "^15.4.2",
+    "react-router": "^3.0.2",
+    "reqwest": "^2.0.5"
+  },
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-import": "^1.1.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-latest": "^6.22.0",
+    "babel-preset-react": "^6.22.0",
+    "css-loader": "^0.26.1",
+    "html-loader": "^0.4.4",
+    "html-webpack-plugin": "^2.28.0",
+    "less": "^2.7.2",
+    "less-loader": "^2.2.3",
+    "react-hot-loader": "3.0.0-beta.6",
+    "style-loader": "^0.13.1",
+    "webpack": "2",
+    "webpack-dev-server": "2",
+    "webpack-merge": "^2.6.1"
+  }
+}
