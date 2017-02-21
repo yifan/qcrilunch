@@ -104,7 +104,7 @@ app.get('/api/order', (req, res) => {
             ret['when'] = lunch.when;
           }
 
-          if (order !== null && order.lunch.equals(lunch._id)) {
+          if (order !== null && lunch !== null && order.lunch.equals(lunch._id)) {
             console.log('order found');
           }
           else {
@@ -122,26 +122,31 @@ app.get('/api/order', (req, res) => {
   });
 });
 
+// BUGFIX: lunch was deleted, receipt should be disabled as well
 app.get('/api/receipt', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   Lunch.findOne({when: { $gt: Date.now() }}, (err, lunch) => {
     if (!err) {
-      Order.find({lunch: lunch._id}, (err, orders) => {
-        var numShared = 0;
-        orders.map((o) => {
-          console.log(o, numShared);
-          if (o.shared) {
-            numShared ++;
-          }
+      if (lunch !== null) {
+        Order.find({lunch: lunch._id}, (err, orders) => {
+          var numShared = 0;
+          orders.map((o) => {
+            console.log(o, numShared);
+            if (o.shared) {
+              numShared ++;
+            }
+          });
+          Dish.find({available: false, shared: { $lte: numShared }}, (err, dishes) => {
+            if (err) {
+              res.send(JSON.stringify({err: err}));
+            } else {
+              res.send(JSON.stringify({numShared, orders, dishes}));
+            }
+          });
         });
-        Dish.find({available: false, shared: { $lte: numShared }}, (err, dishes) => {
-          if (err) {
-            res.send(JSON.stringify({err: err}));
-          } else {
-            res.send(JSON.stringify({numShared, orders, dishes}));
-          }
-        });
-      });
+      } else {
+        res.send(JSON.stringify({err: 'no lunch'}));
+      }
     }
     else {
       res.send(JSON.stringify({err: err}));
