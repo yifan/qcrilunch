@@ -1,12 +1,13 @@
 import React, { PropTypes } from 'react';
 import reqwest from 'reqwest';
-import { Table, Button } from 'antd';
+import { Table, Button, Switch } from 'antd';
 
 class Receipt extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { ready: false };
+    this.state = { ready: false, vendor: false };
   } 
+
   componentWillMount() {
     reqwest({
       url: '/api/receipt',
@@ -22,6 +23,7 @@ class Receipt extends React.Component {
 
   render() {
     if (this.state.ready) {
+      const vendor = {};
       const data = [];
       const columns = [{
           title: 'Dish',
@@ -39,9 +41,13 @@ class Receipt extends React.Component {
 
       var key = 0;
       var sharedTotal = 0;
+      var rice = 0;
       this.state.dishes.map((d, i) => {
         key ++;
         sharedTotal += d.price;
+        if (d.price > 0) {
+          vendor[d.name] = d.name in vendor ? vendor[d.name]++ : 1;
+        }
         data.push({
           key: key,
           dishname: d.name,
@@ -50,8 +56,6 @@ class Receipt extends React.Component {
           who: 'shared',
         });
       });
-
-
 
       var sum = 0;
       var sharedAverage = sharedTotal>0?Math.ceil(sharedTotal/this.state.dishes.length):0;
@@ -74,6 +78,7 @@ class Receipt extends React.Component {
         const children = [];
         if (o.shared) {
           key++;
+          rice += 4;
           children.push({
             key: key,
             dishname: 'shared + rice',
@@ -85,6 +90,7 @@ class Receipt extends React.Component {
         o.dishes.map((d) => {
           userTotal += d.order.price * d.number;
           key ++;
+          vendor[d.order.name] = d.order.name in vendor ? vendor[d.order.name]+d.number : d.number;
           children.push({
             key: key,
             dishname: d.order.name,
@@ -137,13 +143,41 @@ class Receipt extends React.Component {
         who: '',
       });
 
-      const footer = () => <Button type='primary' onClick={()=>this.context.router.push('/order')}> Back to Order </Button>;
+      rice = Math.floor(rice/5);
 
-      return (<Table columns={columns}
-                dataSource={data}
-                pagination={false}
-                title={() => <h2> Your Receipt: </h2>}
-                footer={footer}/>);
+      vendor['米饭'] = rice;
+
+      const footer = () => <div>
+            <Button type='primary' onClick={()=>this.context.router.push('/order')}> Back to Order </Button>
+            <span />
+            <Switch checkedChildren={'Vendor'} unCheckedChildren={'Customer'} onChange={(c)=>this.setState({vendor:c})}/>
+          </div>;
+
+      if (this.state.vendor) {
+        const vendordata = [];
+        for (var name in vendor) {
+          key ++;
+          vendordata.push({
+            key: key,
+            dishname: name,
+            price: '',
+            unit: vendor[name],
+            who:'',
+          });
+        }
+
+        return (<Table columns={columns}
+                  dataSource={vendordata}
+                  pagination={false}
+                  title={() => <h2> Your Receipt: </h2>}
+                  footer={footer}/>);
+      } else {
+        return (<Table columns={columns}
+                  dataSource={data}
+                  pagination={false}
+                  title={() => <h2> Your Receipt: </h2>}
+                  footer={footer}/>);
+      }
     } else {
       return (<p> Loading </p>);
     }

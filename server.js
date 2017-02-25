@@ -90,8 +90,6 @@ app.get('/api/order', (req, res) => {
     return;
   }
   res.setHeader('Content-Type', 'application/json');
-  // remove old lunches
-  Lunch.find({when: { $lt: Date.now() }}).remove().exec(); 
 
   Lunch.findOne({when: { $gt: Date.now() }}, (err, lunch) => {
     console.log('lunch: ',err, lunch);
@@ -122,10 +120,9 @@ app.get('/api/order', (req, res) => {
   });
 });
 
-// BUGFIX: lunch was deleted, receipt should be disabled as well
 app.get('/api/receipt', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  Lunch.findOne({when: { $gt: Date.now() }}, (err, lunch) => {
+  Lunch.findOne().sort('-when').exec((err, lunch) => {
     if (!err) {
       if (lunch !== null) {
         Order.find({lunch: lunch._id}, (err, orders) => {
@@ -140,7 +137,7 @@ app.get('/api/receipt', (req, res) => {
             if (err) {
               res.send(JSON.stringify({err: err}));
             } else {
-              res.send(JSON.stringify({numShared, orders, dishes}));
+              res.send(JSON.stringify({numShared, orders, dishes, lunch}));
             }
           });
         });
