@@ -9,7 +9,7 @@
     "build:dev": "./node_modules/webpack/bin/webpack.js --config=webpack.config.js",
     "build:prod": "./node_modules/webpack/bin/webpack.js --config=webpack.config.js",
     "postinstall": "NODE_ENV=production webpack --config=webpack.config.js",
-    "start": "node ./server.js",
+    "start": "MONGODB_URI=$(heroku config:get MONGODB_URI) node ./server.js",
     "dev-server": "webpack-dev-server --hot"
   },
   "engines": {
@@ -27,6 +27,7 @@
     "mongojs": "^2.4.0",
     "mongoose": "^4.8.1",
     "morgan": "^1.8.0",
+    "nodemailer": "^4.0.1",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^4.0.0",

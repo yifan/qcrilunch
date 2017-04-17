@@ -52,7 +52,7 @@ class OptionDishOrder extends React.Component {
   }
 
   render() {
-    const { size, menu, after } = this.props;
+    const { size, menu, after, disabled } = this.props;
     const state = this.state;
     const menuItems = menu.map((item, index) => 
       <Select.Option value={JSON.stringify(item, Object.keys(item).sort())} key={`op-${index}`}> 
@@ -65,6 +65,7 @@ class OptionDishOrder extends React.Component {
           size={size} style={{ width: '60%' }}
           placeholder='additional dish'
           onChange={this.handleOrderChange}
+          disabled={disabled}
         >
           {menuItems}
         </Select>
@@ -77,6 +78,15 @@ class OptionDishOrder extends React.Component {
     );
   }
 }
+
+OptionDishOrder.defaultProps = {
+  disabled: false
+};
+
+OptionDishOrder.propTypes = {
+  disabled: React.PropTypes.boolean
+};
+
 
 class OrderForm extends React.Component {
   constructor(props) {
@@ -127,13 +137,15 @@ class OrderForm extends React.Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
+        const lunch = values.lunch;
+        lunch.set({hour:12, minute:30});
         this.setState({ready: false});
         reqwest({
           url: '/api/lunch',
           method: 'post',
           type: 'json',
           contentType: 'application/json',
-          data: JSON.stringify({when: values.lunch}),
+          data: JSON.stringify({when: lunch}),
           error: (err) => {
             console.log(err);
             //message.error('failed to submit your order, pelease try agian later!');
@@ -267,6 +279,7 @@ class OrderForm extends React.Component {
     const { getFieldDecorator, getFieldValue } = this.props.form;
     getFieldDecorator('keys', { initialValue: this.state.keys });
     const keys = getFieldValue('keys');
+    const disabled = this.state.disabled;
     const formItems = keys.map((k, index) => {
       const orderKey = `order-${k}`;
       if (!(orderKey in this.state.orders)) {
@@ -290,7 +303,7 @@ class OrderForm extends React.Component {
             initialValue: { number: order.number, order: order.order },
             rules: [{ validator: this.checkOrder }],
           })(
-            <OptionDishOrder menu={this.state.menu} after={deleteButton}/>
+            <OptionDishOrder menu={this.state.menu} after={deleteButton} disabled={disabled}/>
           )}
         </Form.Item>
       );
@@ -313,7 +326,7 @@ class OrderForm extends React.Component {
                     </Input.Group>
                   </Form.Item>
                   <Form.Item>
-                    <Button type='primary' htmlType='submit' size='large'>Create Lunch</Button>
+                    <Button type='primary' htmlType='submit' size='large'>Create and inform subscribers</Button>
                   </Form.Item>
                 </Form>
               </Card>
@@ -335,7 +348,7 @@ class OrderForm extends React.Component {
                     {getFieldDecorator('shared-dish', {
                       initialValue: this.state.shared
                     })(
-                      <Checkbox onChange={this.onChangeShared} checked={this.state.shared} /> 
+                      <Checkbox onChange={this.onChangeShared} checked={this.state.shared} disabled={disabled}/> 
                     )}
                     <p className='ant-form-text'>I am participating a shared lunch of varity of dishes (QAR35-40).</p> 
                   </Input.Group>
@@ -347,7 +360,7 @@ class OrderForm extends React.Component {
                 {formItems}
 
                 <Form.Item >
-                  <Button type='dashed' onClick={this.addOption}>
+                  <Button type='dashed' onClick={this.addOption} disabled={disabled}>
                     <Icon type='plus' >Add Option Dish</Icon>
                   </Button>
                 </Form.Item>

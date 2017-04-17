@@ -10,6 +10,8 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
+const nodemailer = require('nodemailer');
+
 console.log(process.env.MONGODB_URI);
 mongoose.connect(process.env.MONGODB_URI);
 
@@ -162,15 +164,56 @@ app.post('/api/order', (req, res) => {
         res.send(JSON.stringify({err: err}));
       }
       else {
+        
         res.send(JSON.stringify(order));
       }
     }
   );
 });
 
-app.post('/api/lunch', (req, res) => {
-  Lunch.create({user: req.user.email, when: req.body.when}, (err, lunch) => {
+const informSubscribers = (subscribers) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'qcrilunch@gmail.com',
+      pass: 'qcri1234'
+    }
+  });
+
+
+  User.find({}, 'email', (err, users) => {
     if (!err) {
+      var subscribers = "";
+      for (var user of users) {
+        subscribers = subscribers.concat(user.email + ";");
+      }
+      console.log(subscribers);
+      const mailOptions = {
+        from: '"QCRI Lunch" <lunch@qcrilunch.com>',
+        to: subscribers,
+        subject: 'A lunch is created, calling for subscribers',
+        text: 'Please go to http://qcrilunch.herokuapp.com to subscribe lunch',
+        html: '<p><a href="http://qcrilunch.herokuapp.com">QCRI Lunch App</a></p>'
+      };
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          return console.log(err);
+        }
+        console.log('Message %s sent: %s', info.messageId, info.response);
+      });
+    } else {
+      console.log(err);
+    }
+  });
+}
+
+app.post('/api/lunch', (req, res) => {
+  const when = req.body.when;
+  Lunch.create({user: req.user.email, when: when}, (err, lunch) => {
+    if (!err) {
+      informSubscribers('yzhang@hbku.edu.qa');
       res.send(JSON.stringify({lunch:lunch}));
     }
     else {
